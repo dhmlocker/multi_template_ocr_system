@@ -7,6 +7,7 @@
 - `02_ocr_boxes_inside.jpg`：文字严格绘制在 OCR 框内部的可视化
 - `03_ocr_roi.jpg`：OCR 框与模板字段 ROI 可视化
 - `04_original_vs_ocr.jpg`：原图与彩色 OCR 框并排图
+- `04_original_vs_white.jpg`：论文和演示首选的原图 + 白底 OCR 双栏图
 - `05_text_recognition_white.jpg`：白底文本识别结果图
 - `04_original_vs_ocr_inside.jpg`、`05_text_recognition_white_inside.jpg`：最新框内文字重绘结果
 - `official/`：PaddleOCR 官方 save_to_img/save_to_json 输出

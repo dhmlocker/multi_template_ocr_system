@@ -117,7 +117,7 @@ run_local_demo.bat
 python -m streamlit run app.py
 ```
 
-如果本地只显示文本而没有 OCR 框，请检查 `outputs/demo_samples/<模板>/02_ocr_boxes.jpg`、`05_text_recognition_white.jpg` 和 `official/` 目录，而不要只查看右侧文本列表。当前 OCR 框内会绘制识别文字；`runtime_manifest.json` 记录当前环境信息。
+识别页默认显示“原图 + 白底 OCR”双栏结果：左侧是原始图片，右侧是纯白背景、彩色 OCR 框和框内识别文字。论文和演示优先使用 `outputs/demo_samples/<模板>/04_original_vs_white.jpg`；`02_ocr_boxes_inside.jpg` 是原图框选视图，`05_text_recognition_white.jpg` 是纯白底视图。如果本地只显示文本而没有双栏图，请检查 `official/` 和 `runtime_manifest.json`，不要只查看右侧文本列表。
 
 **开箱体验**：`data/samples/` 内置 3 张示例图（医院票据/发票/面单各一张），无需下载数据集即可在"新建识别"页的"示例图片"下拉中选择并运行识别。
 

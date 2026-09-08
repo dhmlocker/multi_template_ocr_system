@@ -12,7 +12,7 @@ if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
 from core.types import OCRItem
-from core.visualization import draw_ocr_boxes, draw_white_ocr_canvas, make_side_by_side
+from core.visualization import draw_ocr_boxes, draw_white_ocr_canvas, make_original_white_result_pair
 
 OUT = ROOT / 'outputs' / 'demo_samples'
 
@@ -44,7 +44,7 @@ def main() -> int:
         items = [OCRItem(box=poly, text=str(text), confidence=float(score)) for text, score, poly in zip(texts, scores, polys) if str(text).strip()]
         annotated = draw_ocr_boxes(image, items)
         save(sample_dir / '02_ocr_boxes_inside.jpg', annotated)
-        save(sample_dir / '04_original_vs_ocr_inside.jpg', make_side_by_side(image, annotated))
+        save(sample_dir / '04_original_vs_white.jpg', make_original_white_result_pair(image, items))
         save(sample_dir / '05_text_recognition_white_inside.jpg', draw_white_ocr_canvas(image.shape[:2], items))
         print(f'{sample_dir.name}: rendered {len(items)} boxes')
     return 0

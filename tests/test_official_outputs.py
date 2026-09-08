@@ -4,7 +4,7 @@ import numpy as np
 
 from core.refinement import refine_low_confidence_items
 from core.types import OCRItem
-from core.visualization import draw_ocr_boxes, draw_white_ocr_canvas
+from core.visualization import draw_ocr_boxes, draw_white_ocr_canvas, make_original_white_result_pair
 
 
 class FakeEngine:
@@ -38,3 +38,12 @@ def test_ocr_box_visualization_keeps_text_inside_small_box():
     assert result.shape == image.shape
     assert np.any(result[10:22, 10:30] != 0)
     assert not np.any(result[0:8, 10:30] != 0)
+
+
+def test_original_white_pair_has_white_result_panel():
+    image = np.zeros((40, 60, 3), dtype=np.uint8)
+    item = OCRItem([[10, 10], [30, 10], [30, 22], [10, 22]], '结果', 0.9)
+    pair = make_original_white_result_pair(image, [item], panel_width=60)
+    assert pair.shape[1] == 60 * 2 + 24
+    right = pair[:, 84:]
+    assert float(np.mean(right)) > 220.0

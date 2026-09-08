@@ -3,7 +3,7 @@ from __future__ import annotations
 from core.image_utils import bgr_to_rgb, decode_image
 from core.analysis import summarize_result
 from core.types import ClassificationResult
-from core.visualization import draw_all, draw_ocr_boxes, draw_roi_boxes, draw_white_ocr_canvas
+from core.visualization import draw_all, draw_ocr_boxes, draw_roi_boxes, draw_white_ocr_canvas, make_original_white_result_pair
 from ui.common import (
     ICON_LAYOUT,
     ICON_REFRESH,
@@ -15,7 +15,7 @@ from ui.common import (
     sample_images,
 )
 
-VIEW_OPTIONS = ['原图', '文本结果', 'OCR 框', 'OCR + ROI']
+VIEW_OPTIONS = ['原图 + 白底结果', '原图', '文本结果', 'OCR 框', 'OCR + ROI']
 METHOD_LABELS = {'cnn': 'CNN（主方案）', 'orb': 'ORB（对比基线）', 'ocr_only': '仅 OCR，不分类'}
 
 
@@ -150,6 +150,7 @@ def render(config, pipeline, repository) -> None:
 
     if payload is not None:
         if run_clicked:
+            st.session_state['rec_view'] = '原图 + 白底结果'
             with st.spinner('正在进行模板分类...'):
                 bgr, cls_result, cls_warnings, cls_ms = pipeline.classify(payload, method)
             st.session_state[cls_state_key] = (cls_result, cls_warnings)
@@ -178,7 +179,9 @@ def render(config, pipeline, repository) -> None:
                 '上传或选择示例图片后显示</div>', unsafe_allow_html=True,
             )
         else:
-            view_state = st.session_state.get('rec_view', '原图')
+            view_state = st.session_state.get('rec_view', '原图 + 白底结果')
+            if view_state not in VIEW_OPTIONS:
+                view_state = '原图 + 白底结果'
             vcols = st.columns(len(VIEW_OPTIONS))
             for i, opt in enumerate(VIEW_OPTIONS):
                 with vcols[i]:
@@ -188,8 +191,10 @@ def render(config, pipeline, repository) -> None:
                         st.rerun()
             shown = image
             if result is not None:
-                vm = st.session_state.get('rec_view', '原图')
-                if vm == 'OCR 框':
+                vm = st.session_state.get('rec_view', '原图 + 白底结果')
+                if vm == '原图 + 白底结果':
+                    shown = make_original_white_result_pair(image, result.ocr_items)
+                elif vm == 'OCR 框':
                     shown = draw_ocr_boxes(image, result.ocr_items)
                 elif vm == '文本结果':
                     shown = draw_white_ocr_canvas(image.shape[:2], result.ocr_items)

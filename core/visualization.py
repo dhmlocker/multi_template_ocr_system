@@ -137,6 +137,12 @@ def make_side_by_side(image: np.ndarray, annotated: np.ndarray, panel_width: int
     return canvas
 
 
+def make_original_white_result_pair(image: np.ndarray, items: list[OCRItem], panel_width: int = 900) -> np.ndarray:
+    """Create the reference layout: original source on the left, white OCR on the right."""
+    white_result = draw_white_ocr_canvas(image.shape[:2], items)
+    return make_side_by_side(image, white_result, panel_width=panel_width)
+
+
 def draw_white_ocr_canvas(image_shape: tuple[int, int], items: list[OCRItem]) -> np.ndarray:
     """Render OCR boxes and text on a clean white document canvas like the official demo."""
     height, width = int(image_shape[0]), int(image_shape[1])

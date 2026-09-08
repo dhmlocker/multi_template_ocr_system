@@ -18,7 +18,7 @@ if str(ROOT) not in sys.path:
 from core.analysis import summarize_result, write_csv, write_jsonl  # noqa: E402
 from core.config import AppConfig  # noqa: E402
 from core.pipeline import RecognitionPipeline  # noqa: E402
-from core.visualization import draw_all, draw_ocr_boxes, draw_white_ocr_canvas, make_side_by_side  # noqa: E402
+from core.visualization import draw_all, draw_ocr_boxes, draw_white_ocr_canvas, make_original_white_result_pair, make_side_by_side  # noqa: E402
 
 
 def read_image(path: Path) -> np.ndarray:
@@ -63,6 +63,7 @@ def main() -> int:
         save_image(sample_dir / '02_ocr_boxes.jpg', draw_ocr_boxes(image, result.ocr_items))
         save_image(sample_dir / '03_ocr_roi.jpg', draw_all(image, result.ocr_items, result.fields))
         save_image(sample_dir / '04_original_vs_ocr.jpg', make_side_by_side(image, draw_ocr_boxes(image, result.ocr_items)))
+        save_image(sample_dir / '04_original_vs_white.jpg', make_original_white_result_pair(image, result.ocr_items))
         save_image(sample_dir / '05_text_recognition_white.jpg', draw_white_ocr_canvas(image.shape[:2], result.ocr_items))
         official_dir = sample_dir / 'official'
         if official_dir.exists():
@@ -99,6 +100,7 @@ def main() -> int:
         '- `02_ocr_boxes.jpg`：OCR 文本框可视化\n'
         '- `03_ocr_roi.jpg`：OCR 框与模板字段 ROI 可视化\n'
         '- `04_original_vs_ocr.jpg`：原图与彩色 OCR 框并排图\n'
+        '- `04_original_vs_white.jpg`：原图与白底 OCR 双栏主结果\n'
         '- `05_text_recognition_white.jpg`：白底文本识别结果图\n'
         '- `official/`：PaddleOCR 官方 save_to_img/save_to_json 输出\n'
         '- `demo_summary.csv`：可用于论文统计的汇总数据\n'
