@@ -172,14 +172,21 @@ def result_ocr_rows(result: Any) -> list[dict[str, Any]]:
 
 
 def sample_images(config, limit: int = 50) -> list[Path]:
+    """示例图片：优先 data/samples/（随仓库分发，开箱即用），再补充 test/val。"""
     root: Path = config.project_root
     picks: list[Path] = []
+    samples_dir = root / 'data' / 'samples'
+    if samples_dir.is_dir():
+        for p in sorted(samples_dir.rglob('*')):
+            if p.is_file() and p.suffix.lower() in {'.png', '.jpg', '.jpeg', '.bmp', '.webp'}:
+                picks.append(p)
     for base in (root / 'data' / 'test', root / 'data' / 'val'):
         if not base.is_dir():
             continue
         for p in sorted(base.rglob('*')):
             if p.is_file() and p.suffix.lower() in {'.png', '.jpg', '.jpeg', '.bmp', '.webp'}:
-                picks.append(p)
+                if p not in picks:
+                    picks.append(p)
         if len(picks) >= limit:
             break
     return picks[:limit]

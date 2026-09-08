@@ -25,8 +25,9 @@ multi_template_ocr_system/
 │   ├── classifier.pth         # CNN 分类器权重（8.7 MB）
 │   ├── class_names.json      # 类别列表
 │   └── orb_templates/         # ORB 参考图
-├── data/                      # ← 需要自行下载
-│   ├── train/.gitkeep
+├── data/
+│   ├── samples/               # ✅ 随仓库分发：每类 1 张示例图（开箱即用）
+│   ├── train/.gitkeep         # ← 完整训练集需自行下载
 │   ├── val/.gitkeep
 │   └── test/.gitkeep
 └── outputs/                   # 运行时产物（自动创建）
@@ -102,6 +103,8 @@ python -m streamlit run app.py
 ```
 
 首次启动时 PaddleOCR 会自动下载 PP-OCRv6 模型（约 132 MB），需联网。下载完成后会缓存到本地。
+
+**开箱体验**：`data/samples/` 内置 3 张示例图（医院票据/发票/面单各一张），无需下载数据集即可在"新建识别"页的"示例图片"下拉中选择并运行识别。
 
 ### 功能页说明
 

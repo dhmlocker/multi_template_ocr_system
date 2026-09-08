@@ -24,6 +24,9 @@ data/test/**
 !data/train/.gitkeep
 !data/val/.gitkeep
 !data/test/.gitkeep
+# 但保留每类 1 张示例图（共 ~2.4 MB，用于开箱演示）
+!data/samples/
+!data/samples/**
 
 # 运行输出
 outputs/
