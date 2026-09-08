@@ -1,0 +1,30 @@
+# OCR 模型路径：
+# - det_model_dir / rec_model_dir 留空字符串时，PaddleOCR 首次运行会自动下载 PP-OCRv6 中文模型
+# - 指向本地目录（如 models/PP-OCRv6_medium_det）则使用本地模型
+ocr:
+  det_model_dir: ''
+  rec_model_dir: ''
+  use_angle_cls: false
+  lang: ch
+  det_limit_side_len: 1600
+
+# 模板分类器
+# - CNN classifier.pth (8.7MB) 进入仓库
+# - mobilenet_v2_imagenet.pth (13.6MB) 首次训练时 torchvision 自动下载
+# - ORB orb_templates/ 小图 (~4MB) 进入仓库
+classifier:
+  method: cnn
+  cnn_model_path: models/classifier.pth
+  class_names_path: models/class_names.json
+  pretrained_backbone_path: ''   # 留空则 torchvision 自动下载
+  orb_reference_dir: models/orb_templates
+  min_confidence: 0.0
+
+database:
+  path: outputs/recognition.db
+
+templates:
+  config_dir: config/templates
+
+runtime:
+  device: cpu

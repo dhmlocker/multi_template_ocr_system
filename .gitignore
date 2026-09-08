@@ -1,0 +1,48 @@
+# Python
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.venv/
+venv/
+
+# IDE / OS
+.idea/
+.vscode/
+.DS_Store
+Thumbs.db
+
+# ============ 大文件/不进仓库 ============
+# PP-OCRv6 推理模型（~132 MB）—— 首次运行 PaddleOCR 自动下载
+models/PP-OCRv6_*/
+# torchvision 预训练 backbone（~13 MB）—— 训练时 torchvision 自动下载
+models/mobilenet_v2_imagenet.pth
+
+# 数据集（~650 MB）—— 用网盘链接下载后放到 data/
+data/train/**
+data/val/**
+data/test/**
+!data/train/.gitkeep
+!data/val/.gitkeep
+!data/test/.gitkeep
+
+# 运行输出
+outputs/
+*.db
+*.sqlite
+*.sqlite3
+
+# 训练产物
+*.pdparams
+*.pdmodel
+*.pdiparams
+*.onnx
+training_metrics.json
+
+# ============ 需要进仓库但不要被 *.pth 通配排除 ============
+!models/classifier.pth
+!models/class_names.json
+!models/orb_templates/**
+!models/requirements.txt
+
+# HuggingFace / Paddle 下载缓存
+.cache/

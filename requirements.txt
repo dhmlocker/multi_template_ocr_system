@@ -1,0 +1,14 @@
+# Recommended runtime: Python 3.10 or 3.11 on Windows.
+# PaddlePaddle CPU package; for GPU, replace with the matching official GPU build.
+paddlepaddle>=3.0,<4.0
+paddleocr>=3.0,<4.0
+streamlit>=1.35,<2.0
+opencv-python>=4.8,<5.0
+PyYAML>=6.0,<7.0
+Pillow>=10.0,<13.0
+numpy>=1.24,<3.0
+pandas>=2.0,<3.0
+matplotlib>=3.8,<4.0
+torch>=2.2,<3.0
+torchvision>=0.17,<1.0
+pytest>=8.0,<10.0

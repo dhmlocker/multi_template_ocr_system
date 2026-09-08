@@ -1,0 +1,73 @@
+{
+  "template_name": "医院收费票据",
+  "reference_width": 1174,
+  "reference_height": 807,
+  "fields": [
+    {
+      "field_name": "姓名",
+      "bbox": [
+        144.0,
+        262.8,
+        608.0,
+        306.2
+      ],
+      "match_mode": "center",
+      "iou_threshold": 0.1
+    },
+    {
+      "field_name": "住院号",
+      "bbox": [
+        798.3,
+        154.8,
+        1112.7,
+        702.2
+      ],
+      "match_mode": "center",
+      "iou_threshold": 0.1
+    },
+    {
+      "field_name": "合计",
+      "bbox": [
+        113.2,
+        539.8,
+        1067.8,
+        589.2
+      ],
+      "match_mode": "center",
+      "iou_threshold": 0.1
+    },
+    {
+      "field_name": "医保统筹",
+      "bbox": [
+        136.9,
+        605.0,
+        718.1,
+        647.0
+      ],
+      "match_mode": "center",
+      "iou_threshold": 0.1
+    },
+    {
+      "field_name": "个人支付",
+      "bbox": [
+        462.8,
+        300.0,
+        900.2,
+        330.0
+      ],
+      "match_mode": "center",
+      "iou_threshold": 0.1
+    },
+    {
+      "field_name": "收款单位",
+      "bbox": [
+        116.7,
+        630.2,
+        991.3,
+        676.8
+      ],
+      "match_mode": "center",
+      "iou_threshold": 0.1
+    }
+  ]
+}

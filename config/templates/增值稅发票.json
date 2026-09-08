@@ -1,0 +1,62 @@
+{
+  "template_name": "增值稅发票",
+  "reference_width": 4208,
+  "reference_height": 3120,
+  "fields": [
+    {
+      "field_name": "开票日期",
+      "bbox": [
+        3020.5,
+        762.8,
+        4028.5,
+        872.2
+      ],
+      "match_mode": "center",
+      "iou_threshold": 0.1
+    },
+    {
+      "field_name": "纳税人识别号",
+      "bbox": [
+        358.1,
+        879.2,
+        2734.9,
+        1291.8
+      ],
+      "match_mode": "center",
+      "iou_threshold": 0.1
+    },
+    {
+      "field_name": "价税合计",
+      "bbox": [
+        359.3,
+        2135.2,
+        3486.7,
+        2277.8
+      ],
+      "match_mode": "center",
+      "iou_threshold": 0.1
+    },
+    {
+      "field_name": "名称",
+      "bbox": [
+        343.8,
+        1311.2,
+        2101.2,
+        1435.8
+      ],
+      "match_mode": "center",
+      "iou_threshold": 0.1
+    },
+    {
+      "field_name": "地址",
+      "bbox": [
+        358.1,
+        879.2,
+        2734.9,
+        1291.8
+      ],
+      "match_mode": "center",
+      "iou_threshold": 0.1
+    }
+  ]
+}
