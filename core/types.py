@@ -9,6 +9,8 @@ class OCRItem:
     box: list[list[float]]
     text: str
     confidence: float = 0.0
+    source: str = "full_page"
+    parent_index: int | None = None
 
     @property
     def bounds(self) -> tuple[float, float, float, float]:

@@ -3,7 +3,7 @@ from __future__ import annotations
 from core.image_utils import bgr_to_rgb, decode_image
 from core.analysis import summarize_result
 from core.types import ClassificationResult
-from core.visualization import draw_all, draw_ocr_boxes, draw_roi_boxes
+from core.visualization import draw_all, draw_ocr_boxes, draw_roi_boxes, draw_white_ocr_canvas
 from ui.common import (
     ICON_LAYOUT,
     ICON_REFRESH,
@@ -15,7 +15,7 @@ from ui.common import (
     sample_images,
 )
 
-VIEW_OPTIONS = ['原图', 'OCR 框', 'OCR + ROI']
+VIEW_OPTIONS = ['原图', '文本结果', 'OCR 框', 'OCR + ROI']
 METHOD_LABELS = {'cnn': 'CNN（主方案）', 'orb': 'ORB（对比基线）', 'ocr_only': '仅 OCR，不分类'}
 
 
@@ -57,8 +57,8 @@ def _render_result(result, image) -> None:
     tab_text, tab_fields, tab_json = st.tabs(['文本识别', '结构化字段', 'JSON'])
     with tab_text:
         if image is not None:
-            h, w = image.shape[:2]
-            st.markdown(doc_layout_html(result.ocr_items, w, h), unsafe_allow_html=True)
+            st.image(bgr_to_rgb(draw_white_ocr_canvas(image.shape[:2], result.ocr_items)), use_container_width=True)
+            st.caption('白底文本结果来自官方 OCR 坐标与识别文本；彩色框颜色用于区分文本区域。')
         else:
             from ui.common import reading_order_html
             st.markdown(reading_order_html(result.ocr_items), unsafe_allow_html=True)
@@ -103,7 +103,9 @@ def _render_result(result, image) -> None:
     )
     st.caption(
         f'总耗时 {total/1000:.1f} s · 分类 {result.timings_ms.get("classification", 0)/1000:.2f} s · '
-        f'OCR {result.timings_ms.get("ocr", 0)/1000:.1f} s · 字段抽取 {result.timings_ms.get("field_extraction", 0)/1000:.2f} s'
+        f'OCR {result.timings_ms.get("ocr", 0)/1000:.1f} s · '
+        f'ROI复识别 {result.timings_ms.get("roi_refine", 0)/1000:.1f} s · '
+        f'字段抽取 {result.timings_ms.get("field_extraction", 0)/1000:.2f} s'
     )
 
 
@@ -189,6 +191,8 @@ def render(config, pipeline, repository) -> None:
                 vm = st.session_state.get('rec_view', '原图')
                 if vm == 'OCR 框':
                     shown = draw_ocr_boxes(image, result.ocr_items)
+                elif vm == '文本结果':
+                    shown = draw_white_ocr_canvas(image.shape[:2], result.ocr_items)
                 elif vm == 'OCR + ROI':
                     shown = draw_all(image, result.ocr_items, result.fields)
             st.markdown('<div class="source-card">', unsafe_allow_html=True)

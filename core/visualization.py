@@ -119,3 +119,21 @@ def make_side_by_side(image: np.ndarray, annotated: np.ndarray, panel_width: int
     canvas[:right.shape[0], panel_width + 24:] = right
     cv2.line(canvas, (panel_width + 12, 0), (panel_width + 12, height), (220, 220, 220), 2)
     return canvas
+
+
+def draw_white_ocr_canvas(image_shape: tuple[int, int], items: list[OCRItem]) -> np.ndarray:
+    """Render OCR boxes and text on a clean white document canvas like the official demo."""
+    height, width = int(image_shape[0]), int(image_shape[1])
+    canvas = np.full((height, width, 3), 255, dtype=np.uint8)
+    pil_img = Image.fromarray(cv2.cvtColor(canvas, cv2.COLOR_BGR2RGB))
+    draw = ImageDraw.Draw(pil_img)
+    font_size = max(13, int(min(height, width) / 90))
+    font = _get_font(font_size)
+    for idx, item in enumerate(items):
+        color = _color(idx)
+        pts = np.asarray(item.box, dtype=np.int32).reshape((-1, 2))
+        draw.polygon([tuple(p) for p in pts], outline=color, width=max(1, font_size // 8))
+        x1, y1 = int(pts[:, 0].min()), int(pts[:, 1].min())
+        text = f'{item.text}  [{item.confidence:.2f}]'
+        draw.text((x1 + 3, max(0, y1 - font_size - 2)), text, fill=color, font=font)
+    return cv2.cvtColor(np.asarray(pil_img), cv2.COLOR_RGB2BGR)

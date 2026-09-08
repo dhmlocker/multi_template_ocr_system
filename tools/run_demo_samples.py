@@ -4,6 +4,7 @@ import json
 import sys
 import time
 import argparse
+import shutil
 from pathlib import Path
 
 import cv2
@@ -16,7 +17,7 @@ if str(ROOT) not in sys.path:
 from core.analysis import summarize_result, write_csv, write_jsonl  # noqa: E402
 from core.config import AppConfig  # noqa: E402
 from core.pipeline import RecognitionPipeline  # noqa: E402
-from core.visualization import draw_all, draw_ocr_boxes, make_side_by_side  # noqa: E402
+from core.visualization import draw_all, draw_ocr_boxes, draw_white_ocr_canvas, make_side_by_side  # noqa: E402
 
 
 def read_image(path: Path) -> np.ndarray:
@@ -61,6 +62,11 @@ def main() -> int:
         save_image(sample_dir / '02_ocr_boxes.jpg', draw_ocr_boxes(image, result.ocr_items))
         save_image(sample_dir / '03_ocr_roi.jpg', draw_all(image, result.ocr_items, result.fields))
         save_image(sample_dir / '04_original_vs_ocr.jpg', make_side_by_side(image, draw_ocr_boxes(image, result.ocr_items)))
+        save_image(sample_dir / '05_text_recognition_white.jpg', draw_white_ocr_canvas(image.shape[:2], result.ocr_items))
+        official_dir = sample_dir / 'official'
+        if official_dir.exists():
+            shutil.rmtree(official_dir)
+        official_outputs = pipeline.ocr_engine.save_official_outputs(official_dir, stem=path.stem)
         summary = summarize_result(result)
         summary.update({
             'sample_index': index,
@@ -72,7 +78,10 @@ def main() -> int:
             'result_dir': str(sample_dir.relative_to(ROOT)),
         })
         rows.append(summary)
-        details.append({'summary': summary, 'result': result.to_dict()})
+        details.append({'summary': summary, 'result': result.to_dict(), 'official_outputs': official_outputs})
+        (sample_dir / 'result_summary.json').write_text(
+            json.dumps(summary, ensure_ascii=False, indent=2), encoding='utf-8'
+        )
         print(f'[{index}/{len(paths)}] {label}: predicted={result.template_name}, text={len(result.ocr_items)}, total={summary["total_ms"]:.0f}ms')
     write_csv(rows, output_root / 'demo_summary.csv')
     write_jsonl(rows, output_root / 'demo_summary.jsonl')
@@ -83,6 +92,9 @@ def main() -> int:
         '- `01_original.jpg`：原始样例图\n'
         '- `02_ocr_boxes.jpg`：OCR 文本框可视化\n'
         '- `03_ocr_roi.jpg`：OCR 框与模板字段 ROI 可视化\n'
+        '- `04_original_vs_ocr.jpg`：原图与彩色 OCR 框并排图\n'
+        '- `05_text_recognition_white.jpg`：白底文本识别结果图\n'
+        '- `official/`：PaddleOCR 官方 save_to_img/save_to_json 输出\n'
         '- `demo_summary.csv`：可用于论文统计的汇总数据\n'
         '- `demo_details.json`：完整识别结果、字段与耗时\n', encoding='utf-8')
     print(f'Wrote demo artifacts to {output_root}')

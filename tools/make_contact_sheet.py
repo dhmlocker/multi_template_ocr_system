@@ -11,7 +11,7 @@ OUTPUT = INPUT / 'all_samples_contact_sheet.jpg'
 
 items = []
 for label in sorted(p for p in INPUT.iterdir() if p.is_dir()):
-    for name in ('01_original.jpg', '02_ocr_boxes.jpg', '03_ocr_roi.jpg'):
+    for name in ('01_original.jpg', '02_ocr_boxes.jpg', '03_ocr_roi.jpg', '05_text_recognition_white.jpg'):
         path = label / name
         if path.is_file():
             image = cv2.imdecode(np.fromfile(str(path), dtype=np.uint8), cv2.IMREAD_COLOR)

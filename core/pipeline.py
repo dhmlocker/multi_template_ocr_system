@@ -11,6 +11,7 @@ from .field_extractor import FieldExtractor
 from .image_utils import decode_image
 from .ocr_engine import PaddleOCREngine
 from .preprocessing import enhance_for_ocr, estimate_quality, preprocessing_summary
+from .refinement import refine_low_confidence_items
 from .orb_classifier import ORBClassifier
 from .types import ClassificationResult, PipelineResult
 
@@ -130,6 +131,22 @@ class RecognitionPipeline:
         t = time.perf_counter()
         ocr_items = self.ocr_engine.recognize(processed)
         timings['ocr'] = (time.perf_counter() - t) * 1000
+        official_metadata = dict(getattr(self.ocr_engine, 'last_metadata', {}) or {})
+        official_result = getattr(self.ocr_engine, 'last_result', None)
+
+        refinement = {'attempted': 0, 'accepted': 0, 'enabled': bool(self.config.ocr.enable_roi_refine)}
+        if self.config.ocr.enable_roi_refine and ocr_items:
+            t = time.perf_counter()
+            ocr_items, refinement = refine_low_confidence_items(
+                bgr,
+                ocr_items,
+                self.ocr_engine,
+                threshold=self.config.ocr.roi_refine_threshold,
+                max_regions=self.config.ocr.roi_refine_max_regions,
+            )
+            timings['roi_refine'] = (time.perf_counter() - t) * 1000
+        else:
+            timings['roi_refine'] = 0.0
 
         fields = []
         t = time.perf_counter()
@@ -154,7 +171,9 @@ class RecognitionPipeline:
             preprocessing=preprocessing,
             image_shape=(int(bgr.shape[0]), int(bgr.shape[1])),
         )
-        result.preprocessing['paddleocrv6'] = dict(getattr(self.ocr_engine, 'last_metadata', {}) or {})
+        result.preprocessing['paddleocrv6'] = official_metadata
+        self.ocr_engine.last_result = official_result
+        result.preprocessing['roi_refine'] = refinement
         if save:
             try:
                 result.record_id = int(self._repo().save_result(result))

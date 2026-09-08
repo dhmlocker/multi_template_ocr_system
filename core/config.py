@@ -26,6 +26,11 @@ class OCRConfig:
     det_limit_side_len: int = 1600
     preprocess_mode: str = "balanced"
     min_confidence_review: float = 0.80
+    det_model_name: str = "PP-OCRv6_medium_det"
+    rec_model_name: str = "PP-OCRv6_medium_rec"
+    enable_roi_refine: bool = True
+    roi_refine_threshold: float = 0.72
+    roi_refine_max_regions: int = 8
 
 
 @dataclass
@@ -89,6 +94,11 @@ class AppConfig:
             det_limit_side_len=int(ocr_raw.get("det_limit_side_len", 1600)),
             preprocess_mode=str(ocr_raw.get("preprocess_mode", "balanced")),
             min_confidence_review=float(ocr_raw.get("min_confidence_review", 0.80)),
+            det_model_name=str(ocr_raw.get("det_model_name", "PP-OCRv6_medium_det")),
+            rec_model_name=str(ocr_raw.get("rec_model_name", "PP-OCRv6_medium_rec")),
+            enable_roi_refine=bool(ocr_raw.get("enable_roi_refine", True)),
+            roi_refine_threshold=float(ocr_raw.get("roi_refine_threshold", 0.72)),
+            roi_refine_max_regions=int(ocr_raw.get("roi_refine_max_regions", 8)),
         )
         classifier = ClassifierConfig(
             method=str(cls_raw.get("method", "cnn")),
@@ -122,6 +132,11 @@ class AppConfig:
                 "det_limit_side_len": self.ocr.det_limit_side_len,
                 "preprocess_mode": self.ocr.preprocess_mode,
                 "min_confidence_review": self.ocr.min_confidence_review,
+                "det_model_name": self.ocr.det_model_name,
+                "rec_model_name": self.ocr.rec_model_name,
+                "enable_roi_refine": self.ocr.enable_roi_refine,
+                "roi_refine_threshold": self.ocr.roi_refine_threshold,
+                "roi_refine_max_regions": self.ocr.roi_refine_max_regions,
             },
             "classifier": {
                 "method": self.classifier.method,

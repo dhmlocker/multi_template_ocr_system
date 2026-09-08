@@ -1,6 +1,14 @@
 # 本地模型目录说明
 
-代码包不附带任何模型权重，也不会自动下载 PP-OCRv6 模型。
+代码包不附带大型模型权重。默认 OCR 链路会按 PaddleOCR 官方接口自动下载并缓存 PP-OCRv6 与文档预处理模型；也支持把检测和识别模型放入本目录后在配置中指定。
+
+首次准备官方模型可以运行：
+
+```bash
+python3 tools/download_models.py --device cpu
+```
+
+官方模型默认缓存目录为 `~/.paddlex/official_models`，包括 `PP-OCRv6_medium_det`、`PP-OCRv6_medium_rec`、`PP-LCNet_x1_0_doc_ori`、`UVDoc` 和 `PP-LCNet_x1_0_textline_ori`。
 
 默认期望你已经下载的 OCR 模型位于：
 

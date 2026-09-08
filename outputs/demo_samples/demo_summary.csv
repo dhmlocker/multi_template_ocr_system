@@ -1,2 +1,2 @@
 ﻿filename,template_name,ocr_items,avg_ocr_confidence,low_confidence_items,fields_total,fields_recognized,field_coverage,quality_score,total_ms,ocr_ms,warnings,sample_index,ground_truth_template,predicted_template,classification_correct,wall_time_ms,source_path,result_dir
-sample_package.jpeg,快递寄件面单,22,0.961,1,3,1,0.3333,86.01,57265.8,52532.19,0,1,快递寄件面单,快递寄件面单,True,57265.86,data/samples/快递寄件面单/sample_package.jpeg,outputs/demo_samples/快递寄件面单
+sample_package.jpeg,快递寄件面单,22,0.9465,2,3,1,0.3333,86.01,161745.41,54432.66,0,1,快递寄件面单,快递寄件面单,True,161745.46,data/samples/快递寄件面单/sample_package.jpeg,outputs/demo_samples/快递寄件面单

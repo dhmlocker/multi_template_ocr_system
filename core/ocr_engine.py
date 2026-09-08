@@ -25,6 +25,7 @@ class PaddleOCREngine:
         self._engine: Any | None = None
         self.last_metadata: dict[str, Any] = {}
         self.last_raw: Any | None = None
+        self.last_result: Any | None = None
 
     def _is_local_model_dir(self, path: str) -> bool:
         """路径非空且目录存在，视为使用本地模型。"""
@@ -65,6 +66,8 @@ class PaddleOCREngine:
             'lang': self.config.lang,
             'enable_mkldnn': False,
             'det_limit_side_len': int(self.config.det_limit_side_len),
+            'text_detection_model_name': self.config.det_model_name,
+            'text_recognition_model_name': self.config.rec_model_name,
         }
         if use_local:
             new_kwargs = {**base, 'text_detection_model_dir': det_dir, 'text_recognition_model_dir': rec_dir}
@@ -111,6 +114,32 @@ class PaddleOCREngine:
         except Exception as exc:
             raise RuntimeError(f'PaddleOCR inference failed: {exc}') from exc
         self.last_raw = raw
+        self.last_result = raw[0] if isinstance(raw, (list, tuple)) and raw else raw
+        self.last_metadata = self.extract_metadata(raw)
+        return self.normalize_result(raw)
+
+    def save_official_outputs(self, output_dir: str | Path, stem: str = 'ocr_result') -> dict[str, str]:
+        """Use PaddleOCR's own result exporters when available."""
+        output = Path(output_dir)
+        output.mkdir(parents=True, exist_ok=True)
+        paths: dict[str, str] = {}
+        result = self.last_result
+        if result is not None and hasattr(result, 'save_to_img'):
+            result.save_to_img(save_path=str(output))
+            paths['official_img_dir'] = str(output)
+        if result is not None and hasattr(result, 'save_to_json'):
+            result.save_to_json(save_path=str(output))
+            paths['official_json_dir'] = str(output)
+        return paths
+
+    def predict_official_source(self, source: str | Path) -> list[OCRItem]:
+        """Run the official pipeline on a file path so exporters retain input geometry."""
+        engine = self._build_engine()
+        raw = engine.predict(str(source)) if hasattr(engine, 'predict') else engine.ocr(str(source), cls=True)
+        if not isinstance(raw, (list, tuple)) and hasattr(raw, '__iter__'):
+            raw = list(raw)
+        self.last_raw = raw
+        self.last_result = raw[0] if isinstance(raw, (list, tuple)) and raw else raw
         self.last_metadata = self.extract_metadata(raw)
         return self.normalize_result(raw)
 
