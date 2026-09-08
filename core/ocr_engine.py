@@ -26,7 +26,14 @@ class PaddleOCREngine:
 
     def _is_local_model_dir(self, path: str) -> bool:
         """路径非空且目录存在，视为使用本地模型。"""
-        return bool(path.strip()) and Path(path).is_dir()
+        return path.strip() not in {'', '.', './'} and Path(path).is_dir()
+
+    def validate_models(self) -> None:
+        """Validate explicitly configured local PP-OCRv6 directories without downloading."""
+        det_dir = str(self.config.det_model_dir).strip()
+        rec_dir = str(self.config.rec_model_dir).strip()
+        if not self._is_local_model_dir(det_dir) or not self._is_local_model_dir(rec_dir):
+            raise FileNotFoundError('Local PP-OCRv6 model directory missing')
 
     def _build_engine(self) -> Any:
         if self._engine is not None:

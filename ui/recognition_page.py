@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from core.image_utils import bgr_to_rgb, decode_image
+from core.analysis import summarize_result
 from core.types import ClassificationResult
 from core.visualization import draw_all, draw_ocr_boxes, draw_roi_boxes
 from ui.common import (
@@ -68,7 +69,7 @@ def _render_result(result, image) -> None:
     with tab_fields:
         rows = result_field_rows(result)
         if rows:
-            st.caption(f'已根据模板"{result.template_name}"的 ROI 配置抽取字段：')
+            st.caption(f'已根据模板"{result.template_name}"的字段配置抽取结果；低置信度字段建议人工复核。')
             st.dataframe(pd.DataFrame(rows), use_container_width=True, hide_index=True)
         else:
             st.info('当前结果没有结构化字段：模板未分类或该模板尚未配置 ROI。')
@@ -76,6 +77,20 @@ def _render_result(result, image) -> None:
         st.json(result.to_dict(), expanded=False)
 
     total = result.timings_ms.get('total', 0.0)
+    summary = summarize_result(result)
+    metric_cols = st.columns(4)
+    metric_cols[0].metric('平均文字置信度', f'{summary["avg_ocr_confidence"] * 100:.1f}%')
+    metric_cols[1].metric('字段覆盖率', f'{summary["field_coverage"] * 100:.1f}%')
+    metric_cols[2].metric('图像质量', f'{summary["quality_score"]:.0f}/100')
+    metric_cols[3].metric('待复核文本', str(summary['low_confidence_items']))
+    if result.quality.get('warnings'):
+        with st.expander('图像质量分析', expanded=False):
+            for warning in result.quality['warnings']:
+                st.warning(warning)
+    st.download_button(
+        '下载识别 JSON', data=__import__('json').dumps(result.to_dict(), ensure_ascii=False, indent=2),
+        file_name=f'{result.filename}.json', mime='application/json', use_container_width=True,
+    )
     st.caption(
         f'总耗时 {total/1000:.1f} s · 分类 {result.timings_ms.get("classification", 0)/1000:.2f} s · '
         f'OCR {result.timings_ms.get("ocr", 0)/1000:.1f} s · 字段抽取 {result.timings_ms.get("field_extraction", 0)/1000:.2f} s'

@@ -159,7 +159,8 @@ def doc_layout_html(items: list[OCRItem], img_w: float, img_h: float) -> str:
 
 def result_field_rows(result: Any) -> list[dict[str, Any]]:
     return [
-        {'字段名': f.field_name, '识别值': f.value, '状态': '未识别' if f.missing else '已识别'}
+        {'字段名': f.field_name, '识别值': f.value, '置信度': f'{f.confidence * 100:.1f}%',
+         '校验': f.validation, '状态': '未识别' if f.missing else '已识别'}
         for f in result.fields
     ]
 

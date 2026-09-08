@@ -10,6 +10,7 @@ from .config import AppConfig
 from .field_extractor import FieldExtractor
 from .image_utils import decode_image
 from .ocr_engine import PaddleOCREngine
+from .preprocessing import enhance_for_ocr, estimate_quality, preprocessing_summary
 from .orb_classifier import ORBClassifier
 from .types import ClassificationResult, PipelineResult
 
@@ -121,8 +122,13 @@ class RecognitionPipeline:
             timings['classification'] = (time.perf_counter() - t) * 1000
         template_name = classification.label if classification else None
 
+        quality = estimate_quality(bgr)
+        warnings.extend(quality.warnings)
+        processed = enhance_for_ocr(bgr, self.config.ocr.preprocess_mode)
+        preprocessing = preprocessing_summary(bgr, processed)
+
         t = time.perf_counter()
-        ocr_items = self.ocr_engine.recognize(bgr)
+        ocr_items = self.ocr_engine.recognize(processed)
         timings['ocr'] = (time.perf_counter() - t) * 1000
 
         fields = []
@@ -144,6 +150,9 @@ class RecognitionPipeline:
             fields=fields,
             timings_ms=timings,
             warnings=warnings,
+            quality=quality.to_dict(),
+            preprocessing=preprocessing,
+            image_shape=(int(bgr.shape[0]), int(bgr.shape[1])),
         )
         if save:
             try:

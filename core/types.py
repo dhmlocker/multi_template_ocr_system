@@ -37,6 +37,8 @@ class FieldResult:
     field_name: str
     value: str
     missing: bool
+    confidence: float = 0.0
+    validation: str = "未校验"
     source_indices: list[int] = field(default_factory=list)
     roi: list[float] | None = None
 
@@ -50,6 +52,8 @@ class PipelineResult:
     fields: list[FieldResult]
     timings_ms: dict[str, float]
     warnings: list[str] = field(default_factory=list)
+    quality: dict[str, Any] = field(default_factory=dict)
+    preprocessing: dict[str, Any] = field(default_factory=dict)
     record_id: int | None = None
     image_path: str | None = None
     image_shape: tuple[int, int] | None = None
@@ -63,5 +67,7 @@ class PipelineResult:
             "fields": [asdict(x) for x in self.fields],
             "timings_ms": self.timings_ms,
             "warnings": self.warnings,
+            "quality": self.quality,
+            "preprocessing": self.preprocessing,
             "record_id": self.record_id,
         }

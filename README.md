@@ -1,11 +1,12 @@
-# Multi-Template Form OCR System
+# 多模板表单自动识别和管理系统
 
-课程设计 · 方向一：基于 PaddleOCR + CNN/ORB 模板分类的多类表单自动识别与管理系统。
+课程设计 · 方向一：基于 PaddleOCRv6 + CNN/ORB 模板分类的多类表单自动识别与管理系统。
 
 - **OCR 引擎**：PaddleOCRv6（中文，CPU/GPU）
 - **模板分类**：MobileNetV2 CNN（主方案） + ORB 特征匹配（对比基线）
-- **前端**：Streamlit（AI Studio 风格 UI）
+- **前端**：Streamlit（参考 PaddleOCR AI Studio 风格 UI）
 - **三类表单**：医院收费票据 / 增值税发票 / 快递寄件面单
+- **结果分析**：图像质量评估、文字/字段置信度、格式校验、识别 JSON 与实验 CSV
 
 ## 目录结构
 
@@ -129,6 +130,12 @@ python -m training.train_cnn
 #    models/classifier.pth   (新分类器权重)
 #    models/class_names.json (更新类别)
 ```
+
+## 识别质量分析
+
+系统默认使用 `balanced` 图像增强，对低对比度、轻度模糊和手机拍摄表单进行保守处理。每次识别会记录图像质量分数、亮度、对比度、模糊度、倾斜角、文字平均置信度、低置信度文本数量和字段覆盖率。若图片质量或字段置信度偏低，界面会提示人工复核，而不是把规则校验结果当作绝对正确。
+
+可在 `config/settings.yaml` 中调整 `ocr.preprocess_mode`：`off` 保持原图，`balanced` 为默认方案，`strong` 适用于更困难的图片。对论文实验应固定配置并保存实际输出，不使用模拟指标。
 
 ## 已知限制
 

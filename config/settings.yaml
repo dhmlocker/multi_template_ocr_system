@@ -7,6 +7,9 @@ ocr:
   use_angle_cls: false
   lang: ch
   det_limit_side_len: 1600
+  # 保守增强，改善手机拍摄的低对比度表单；可设为 off / balanced / strong
+  preprocess_mode: balanced
+  min_confidence_review: 0.80
 
 # 模板分类器
 # - CNN classifier.pth (8.7MB) 进入仓库

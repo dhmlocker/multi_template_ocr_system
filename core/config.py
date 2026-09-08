@@ -8,6 +8,8 @@ import yaml
 
 
 def resolve_project_path(value: str | Path, project_root: str | Path) -> Path:
+    if str(value).strip() in {"", "."}:
+        return Path("")
     path = Path(value)
     return path if path.is_absolute() else (Path(project_root) / path).resolve()
 
@@ -19,6 +21,8 @@ class OCRConfig:
     use_angle_cls: bool = False
     lang: str = "ch"
     det_limit_side_len: int = 1600
+    preprocess_mode: str = "balanced"
+    min_confidence_review: float = 0.80
 
 
 @dataclass
@@ -77,6 +81,8 @@ class AppConfig:
             use_angle_cls=bool(ocr_raw.get("use_angle_cls", False)),
             lang=str(ocr_raw.get("lang", "ch")),
             det_limit_side_len=int(ocr_raw.get("det_limit_side_len", 1600)),
+            preprocess_mode=str(ocr_raw.get("preprocess_mode", "balanced")),
+            min_confidence_review=float(ocr_raw.get("min_confidence_review", 0.80)),
         )
         classifier = ClassifierConfig(
             method=str(cls_raw.get("method", "cnn")),
@@ -105,6 +111,8 @@ class AppConfig:
                 "use_angle_cls": self.ocr.use_angle_cls,
                 "lang": self.ocr.lang,
                 "det_limit_side_len": self.ocr.det_limit_side_len,
+                "preprocess_mode": self.ocr.preprocess_mode,
+                "min_confidence_review": self.ocr.min_confidence_review,
             },
             "classifier": {
                 "method": self.classifier.method,

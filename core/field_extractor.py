@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import re
 from typing import Any
 
 from .types import FieldResult, OCRItem
@@ -46,10 +47,22 @@ class FieldExtractor:
                     matched.append((idx, item))
             matched.sort(key=lambda pair: (pair[1].bounds[1], pair[1].bounds[0]))
             value = " ".join(item.text.strip() for _, item in matched if item.text.strip())
+            confidence = sum(item.confidence for _, item in matched) / len(matched) if matched else 0.0
+            validation = "未识别"
+            if matched:
+                validation = "已识别"
+                if any(token in name for token in ("日期", "时间")):
+                    validation = "格式正常" if re.search(r"\d{2,4}[-/.年]\d{1,2}", value) else "需复核"
+                elif any(token in name for token in ("金额", "税额", "合计")):
+                    validation = "格式正常" if re.search(r"\d+[.，,]?\d*", value) else "需复核"
+                elif any(token in name for token in ("号码", "税号", "代码")):
+                    validation = "格式正常" if len(re.sub(r"\s+", "", value)) >= 6 else "需复核"
             results.append(FieldResult(
                 field_name=name,
                 value=value,
                 missing=not bool(matched),
+                confidence=round(float(confidence), 4),
+                validation=validation,
                 source_indices=[idx for idx, _ in matched],
                 roi=roi,
             ))

@@ -13,7 +13,7 @@ from ui import experiments_page, history_page, recognition_page, settings_page, 
 ROOT = Path(__file__).resolve().parent
 SETTINGS = ROOT / 'config' / 'settings.yaml'
 
-st.set_page_config(page_title='PaddleOCR Forms · 多模板表单识别', page_icon='📄', layout='wide', initial_sidebar_state='expanded')
+st.set_page_config(page_title='多模板表单自动识别和管理系统', page_icon='📄', layout='wide', initial_sidebar_state='expanded')
 st.markdown(APP_CSS, unsafe_allow_html=True)
 
 
@@ -32,7 +32,7 @@ NAV_OPTIONS = ['新建识别', '历史记录', '模板管理', '实验评估', '
 st.session_state.setdefault('nav', '新建识别')
 
 with st.sidebar:
-    st.markdown('## PaddleOCR Forms')
+    st.markdown('## 多模板表单识别')
     st.caption('多模板表单自动识别和管理系统')
 
     def _go_new():
