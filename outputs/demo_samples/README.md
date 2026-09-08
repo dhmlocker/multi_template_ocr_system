@@ -4,9 +4,12 @@
 
 - `01_original.jpg`：原始样例图
 - `02_ocr_boxes.jpg`：OCR 文本框可视化
+- `02_ocr_boxes_inside.jpg`：文字严格绘制在 OCR 框内部的可视化
 - `03_ocr_roi.jpg`：OCR 框与模板字段 ROI 可视化
 - `04_original_vs_ocr.jpg`：原图与彩色 OCR 框并排图
 - `05_text_recognition_white.jpg`：白底文本识别结果图
+- `04_original_vs_ocr_inside.jpg`、`05_text_recognition_white_inside.jpg`：最新框内文字重绘结果
 - `official/`：PaddleOCR 官方 save_to_img/save_to_json 输出
 - `demo_summary.csv`：可用于论文统计的汇总数据
 - `demo_details.json`：完整识别结果、字段与耗时
+- `runtime_manifest.json`：本次运行的 Git 提交、依赖、模型缓存与配置哈希

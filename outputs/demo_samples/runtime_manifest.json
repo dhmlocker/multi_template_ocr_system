@@ -1,0 +1,29 @@
+{
+  "project_root": "/home/ubuntu/multi_template_ocr_system",
+  "git_commit": "802fc559d40fcee0f851abbd2aeec9d409326a72",
+  "python": "3.12.3 (main, Jun 19 2026, 12:46:00) [GCC 13.3.0]",
+  "platform": "Linux-6.18.38+-x86_64-with-glibc2.39",
+  "packages": {
+    "paddle": "3.3.1",
+    "paddleocr": "3.7.0",
+    "paddlex": "3.7.2",
+    "streamlit": "1.63.0",
+    "cv2": "4.10.0",
+    "PIL": "12.3.0",
+    "numpy": "2.3.5",
+    "pandas": "3.0.5",
+    "torch": "2.14.0+cu130",
+    "torchvision": "0.29.0+cu130"
+  },
+  "config_path": "/home/ubuntu/multi_template_ocr_system/config/settings.yaml",
+  "config_sha256": "278241faab40e75b9c259e8f05982e2f1ee8058b98eee0fb882935afb00bb082",
+  "model_cache": "/home/ubuntu/.paddlex/official_models",
+  "models_present": {
+    "PP-OCRv6_medium_det": true,
+    "PP-OCRv6_medium_rec": true,
+    "PP-LCNet_x1_0_doc_ori": true,
+    "UVDoc": true,
+    "PP-LCNet_x1_0_textline_ori": true
+  },
+  "device": "cpu"
+}

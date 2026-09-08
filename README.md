@@ -40,14 +40,14 @@ multi_template_ocr_system/
 - Windows / Linux / macOS（已在 Windows 验证）
 - CPU 即可（OCR 约 1.5 分钟/张，CNN 分类 ~150 ms/张）
 
-## 安装
+## 安装与本地复现
 
 ```bash
 # 1. 克隆
 git clone https://github.com/dhmlocker/multi_template_ocr_system.git
 cd multi_template_ocr_system
 
-# 2. 创建虚拟环境
+# 2. 创建虚拟环境（Trae 必须选择这个解释器）
 python -m venv venv
 # Windows:
 venv\Scripts\activate
@@ -60,8 +60,12 @@ pip install paddlepaddle==3.3.1
 #    GPU 版（CUDA 11.8）：
 # pip install paddlepaddle-gpu==3.3.1.post118
 
-# 4. 安装其余依赖
-pip install paddleocr==3.7.0 streamlit torch torchvision opencv-python pillow pandas
+# 4. 安装与 Manus 验证一致的精确依赖
+pip install -r requirements.lock.txt
+
+# 5. 下载并检查官方 OCRv6 模型
+python tools/download_models.py --device cpu
+python tools/check_local_env.py
 ```
 
 ## 数据集
@@ -103,7 +107,17 @@ python -m streamlit run app.py
 # http://localhost:8501
 ```
 
-首次启动时 PaddleOCR 会自动下载 PP-OCRv6 模型（约 132 MB），需联网。下载完成后会缓存到本地。
+首次启动时 PaddleOCR 会自动下载 PP-OCRv6 及文档预处理模型，需联网。下载完成后会缓存到 `~/.paddlex/official_models`。也可以先运行 `python tools/download_models.py --device cpu`。
+
+Windows 用户可以直接双击 `run_windows.bat`；完成环境和模型准备后，使用 `run_local_demo.bat` 对三类内置样例生成完整结果，再启动 Streamlit。两个脚本会输出运行清单，帮助判断 Trae 是否使用了正确的 Python 解释器、代码提交、依赖和模型。
+
+```bat
+run_windows.bat
+run_local_demo.bat
+python -m streamlit run app.py
+```
+
+如果本地只显示文本而没有 OCR 框，请检查 `outputs/demo_samples/<模板>/02_ocr_boxes.jpg`、`05_text_recognition_white.jpg` 和 `official/` 目录，而不要只查看右侧文本列表。当前 OCR 框内会绘制识别文字；`runtime_manifest.json` 记录当前环境信息。
 
 **开箱体验**：`data/samples/` 内置 3 张示例图（医院票据/发票/面单各一张），无需下载数据集即可在"新建识别"页的"示例图片"下拉中选择并运行识别。
 
@@ -111,7 +125,7 @@ python -m streamlit run app.py
 
 | 页面 | 功能 |
 |------|------|
-| **新建识别** | 上传/选择图片 → 模板分类（秒级） → OCR + 字段抽取（CPU ~1.5 min） |
+| **新建识别** | 上传/选择图片 → 模板分类（秒级） → OCR + ROI 复识别 + 字段抽取 |
 | **历史记录** | 查看已保存的识别结果，与识别时展示完全一致（含原图） |
 | **模板管理** | 管理三类模板的 ROI 配置（字段坐标） |
 | **实验评估** | CNN vs ORB 分类器对比（准确率/耗时/混淆矩阵） |
@@ -133,7 +147,7 @@ python -m training.train_cnn
 
 ## 识别质量分析
 
-系统默认使用 `balanced` 图像增强，对低对比度、轻度模糊和手机拍摄表单进行保守处理。每次识别会记录图像质量分数、亮度、对比度、模糊度、倾斜角、文字平均置信度、低置信度文本数量和字段覆盖率。若图片质量或字段置信度偏低，界面会提示人工复核，而不是把规则校验结果当作绝对正确。
+系统默认使用官方原图模式，并启用文档方向分类、去畸变、文本行方向分类和低置信度 ROI 复识别。每次识别会记录图像质量分数、亮度、对比度、模糊度、倾斜角、文字平均置信度、低置信度文本数量和字段覆盖率。若图片质量或字段置信度偏低，界面会提示人工复核，而不是把规则校验结果当作绝对正确。
 
 可在 `config/settings.yaml` 中调整 `ocr.preprocess_mode`：`off` 保持原图，`balanced` 为默认方案，`strong` 适用于更困难的图片。对论文实验应固定配置并保存实际输出，不使用模拟指标。
 
@@ -141,7 +155,8 @@ python -m training.train_cnn
 
 - CPU 上 OCR 较慢（约 1~2 分钟/张），有 GPU 时切换 `runtime.device: gpu`
 - ORB 参考图仅 8 张，CNN 分类器准确率明显优于 ORB（CNN ~100% vs ORB ~82%）
-- 中文字体需系统有 msyh.ttc / simhei.ttf（Windows 默认有）
+- 中文字体需系统有 msyh.ttc / simhei.ttf（Windows 默认有）；如果字体缺失，OCR 仍会识别，但可视化文字可能退化为默认字体。
+- Manus 与本地结果要一致，必须使用同一 Git commit、同一 `requirements.lock.txt`、同一模型缓存、同一配置和同一输入图片；不同 GPU/CPU 只保证文本结果基本一致，不保证耗时一致。
 
 ## License
 

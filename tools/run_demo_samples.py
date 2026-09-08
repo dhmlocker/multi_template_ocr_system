@@ -5,6 +5,7 @@ import sys
 import time
 import argparse
 import shutil
+import subprocess
 from pathlib import Path
 
 import cv2
@@ -86,6 +87,11 @@ def main() -> int:
     write_csv(rows, output_root / 'demo_summary.csv')
     write_jsonl(rows, output_root / 'demo_summary.jsonl')
     (output_root / 'demo_details.json').write_text(json.dumps(details, ensure_ascii=False, indent=2), encoding='utf-8')
+    try:
+        manifest = subprocess.check_output([sys.executable, str(ROOT / 'tools' / 'print_runtime_manifest.py')], text=True)
+        (output_root / 'runtime_manifest.json').write_text(manifest, encoding='utf-8')
+    except Exception as exc:
+        (output_root / 'runtime_manifest_error.txt').write_text(str(exc), encoding='utf-8')
     (output_root / 'README.md').write_text(
         '# 三类样例实际识别结果\n\n'
         '本目录由 `tools/run_demo_samples.py` 使用当前配置和 PaddleOCRv6 运行生成。\n\n'

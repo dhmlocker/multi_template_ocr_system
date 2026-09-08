@@ -4,7 +4,7 @@ import numpy as np
 
 from core.refinement import refine_low_confidence_items
 from core.types import OCRItem
-from core.visualization import draw_white_ocr_canvas
+from core.visualization import draw_ocr_boxes, draw_white_ocr_canvas
 
 
 class FakeEngine:
@@ -27,3 +27,14 @@ def test_white_ocr_canvas_preserves_image_shape():
     canvas = draw_white_ocr_canvas((30, 50), [item])
     assert canvas.shape == (30, 50, 3)
     assert int(canvas.mean()) > 200
+
+
+def test_ocr_box_visualization_keeps_text_inside_small_box():
+    image = np.zeros((40, 60, 3), dtype=np.uint8)
+    item = OCRItem([[10, 10], [30, 10], [30, 22], [10, 22]], '非常长的识别文本内容', 0.9)
+    result = draw_ocr_boxes(image, [item])
+    # The visualization must retain the original geometry and never create an
+    # external label strip above the box.
+    assert result.shape == image.shape
+    assert np.any(result[10:22, 10:30] != 0)
+    assert not np.any(result[0:8, 10:30] != 0)

@@ -42,15 +42,32 @@ def _color(idx: int) -> tuple[int, int, int]:
     return _COLORS[idx % len(_COLORS)]
 
 
+def _fit_text(text: str, draw: ImageDraw.ImageDraw, font_path: Path | None, box_w: int, box_h: int, base_size: int) -> tuple[str, ImageFont.FreeTypeFont | ImageFont.ImageFont, int]:
+    """Fit a label inside its OCR box; never place it outside the polygon."""
+    for size in range(max(8, base_size), 7, -1):
+        font = ImageFont.truetype(str(font_path), size) if font_path else ImageFont.load_default()
+        candidate = str(text).replace('\n', ' ').strip()
+        while candidate:
+            bbox = draw.textbbox((0, 0), candidate, font=font, stroke_width=1)
+            if bbox[2] - bbox[0] <= max(4, box_w - 4) and bbox[3] - bbox[1] <= max(4, box_h - 4):
+                return candidate, font, size
+            candidate = candidate[:-2] + '…' if len(candidate) > 2 else ''
+    return '…' if text else '', _get_font(8), 8
+
+
+def _font_path() -> Path | None:
+    return next((path for path in _FONT_CANDIDATES if path.exists()), None)
+
+
 def draw_ocr_boxes(image: np.ndarray, items: list[OCRItem]) -> np.ndarray:
-    """在原图上画彩色检测框并标注识别文本（支持中文，接近官方可视化效果）。"""
+    """在原图上画彩色检测框，并把识别文字放在对应框内部。"""
     if not items:
         return image.copy()
 
     h, w = image.shape[:2]
     # 根据图片大小选择字体大小
     font_size = max(12, int(min(h, w) / 80))
-    font = _get_font(font_size)
+    font_path = _font_path()
 
     # OpenCV BGR -> PIL RGB
     pil_img = Image.fromarray(cv2.cvtColor(image, cv2.COLOR_BGR2RGB))
@@ -62,18 +79,18 @@ def draw_ocr_boxes(image: np.ndarray, items: list[OCRItem]) -> np.ndarray:
         # 画多边形框
         pil_pts = [tuple(p) for p in pts]
         draw.polygon(pil_pts, outline=color, width=2)
-        # 标注文本：在框上方画白底文字
+        # 标注文本：严格限制在 OCR 框内部，不再绘制到框上方
         x1 = int(pts[:, 0].min())
         y1 = int(pts[:, 1].min())
-        text = str(item.text)
-        try:
-            bbox = draw.textbbox((x1, y1), text, font=font)
+        box_w = max(8, int(pts[:, 0].max() - pts[:, 0].min()))
+        box_h = max(8, int(pts[:, 1].max() - pts[:, 1].min()))
+        text, font, _ = _fit_text(str(item.text), draw, font_path, box_w, box_h, max(8, min(font_size, box_h - 4)))
+        if text:
+            bbox = draw.textbbox((0, 0), text, font=font, stroke_width=1)
             tw, th = bbox[2] - bbox[0], bbox[3] - bbox[1]
-        except Exception:
-            tw, th = len(text) * font_size, font_size
-        ty = max(0, y1 - th - 3)
-        draw.rectangle([x1, ty, x1 + tw + 6, ty + th + 4], fill=color)
-        draw.text((x1 + 3, ty + 1), text, fill=(255, 255, 255), font=font)
+            tx = x1 + max(2, (box_w - tw) // 2)
+            ty = y1 + max(1, (box_h - th) // 2)
+            draw.text((tx, ty), text, fill=color, font=font, stroke_width=1, stroke_fill=(255, 255, 255))
 
     return cv2.cvtColor(np.array(pil_img), cv2.COLOR_RGB2BGR)
 
@@ -86,18 +103,17 @@ def draw_roi_boxes(image: np.ndarray, fields: list[FieldResult]) -> np.ndarray:
         x1, y1, x2, y2 = [int(round(v)) for v in field.roi]
         cv2.rectangle(canvas, (x1, y1), (x2, y2), (0, 140, 255), 2)
         label = field.field_name
-        # ROI 标签用中文，用 PIL 画
+        # ROI 字段标签也限制在字段框内部
         pil_img = Image.fromarray(cv2.cvtColor(canvas, cv2.COLOR_BGR2RGB))
         draw = ImageDraw.Draw(pil_img)
-        font = _get_font(max(12, int(min(canvas.shape[:2]) / 80)))
-        try:
-            bbox = draw.textbbox((x1, y1), label, font=font)
+        font_path = _font_path()
+        label, font, _ = _fit_text(label, draw, font_path, max(8, x2 - x1), max(8, y2 - y1), max(8, int(min(canvas.shape[:2]) / 90)))
+        if label:
+            bbox = draw.textbbox((0, 0), label, font=font, stroke_width=1)
             tw, th = bbox[2] - bbox[0], bbox[3] - bbox[1]
-        except Exception:
-            tw, th = len(label) * 12, 14
-        ty = max(0, y1 - th - 3)
-        draw.rectangle([x1, ty, x1 + tw + 6, ty + th + 4], fill=(0, 140, 255))
-        draw.text((x1 + 3, ty + 1), label, fill=(255, 255, 255), font=font)
+            tx = x1 + max(2, ((x2 - x1) - tw) // 2)
+            ty = y1 + max(1, ((y2 - y1) - th) // 2)
+            draw.text((tx, ty), label, fill=(0, 140, 255), font=font, stroke_width=1, stroke_fill=(255, 255, 255))
         canvas = cv2.cvtColor(np.array(pil_img), cv2.COLOR_RGB2BGR)
     return canvas
 
@@ -128,12 +144,17 @@ def draw_white_ocr_canvas(image_shape: tuple[int, int], items: list[OCRItem]) ->
     pil_img = Image.fromarray(cv2.cvtColor(canvas, cv2.COLOR_BGR2RGB))
     draw = ImageDraw.Draw(pil_img)
     font_size = max(13, int(min(height, width) / 90))
-    font = _get_font(font_size)
+    font_path = _font_path()
     for idx, item in enumerate(items):
         color = _color(idx)
         pts = np.asarray(item.box, dtype=np.int32).reshape((-1, 2))
         draw.polygon([tuple(p) for p in pts], outline=color, width=max(1, font_size // 8))
         x1, y1 = int(pts[:, 0].min()), int(pts[:, 1].min())
-        text = f'{item.text}  [{item.confidence:.2f}]'
-        draw.text((x1 + 3, max(0, y1 - font_size - 2)), text, fill=color, font=font)
+        box_w = max(8, int(pts[:, 0].max() - pts[:, 0].min()))
+        box_h = max(8, int(pts[:, 1].max() - pts[:, 1].min()))
+        text, font, _ = _fit_text(f'{item.text} [{item.confidence:.2f}]', draw, font_path, box_w, box_h, max(8, min(font_size, box_h - 4)))
+        if text:
+            bbox = draw.textbbox((0, 0), text, font=font, stroke_width=1)
+            tw, th = bbox[2] - bbox[0], bbox[3] - bbox[1]
+            draw.text((x1 + max(2, (box_w - tw) // 2), y1 + max(1, (box_h - th) // 2)), text, fill=color, font=font, stroke_width=1, stroke_fill=(255, 255, 255))
     return cv2.cvtColor(np.asarray(pil_img), cv2.COLOR_RGB2BGR)
