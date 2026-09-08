@@ -19,6 +19,9 @@ class OCRConfig:
     det_model_dir: Path
     rec_model_dir: Path
     use_angle_cls: bool = False
+    use_doc_orientation_classify: bool = True
+    use_doc_unwarping: bool = True
+    use_textline_orientation: bool = True
     lang: str = "ch"
     det_limit_side_len: int = 1600
     preprocess_mode: str = "balanced"
@@ -79,6 +82,9 @@ class AppConfig:
             det_model_dir=resolve_project_path(ocr_raw.get("det_model_dir", "models/PP-OCRv6_medium_det"), root),
             rec_model_dir=resolve_project_path(ocr_raw.get("rec_model_dir", "models/PP-OCRv6_medium_rec"), root),
             use_angle_cls=bool(ocr_raw.get("use_angle_cls", False)),
+            use_doc_orientation_classify=bool(ocr_raw.get("use_doc_orientation_classify", True)),
+            use_doc_unwarping=bool(ocr_raw.get("use_doc_unwarping", True)),
+            use_textline_orientation=bool(ocr_raw.get("use_textline_orientation", ocr_raw.get("use_angle_cls", True))),
             lang=str(ocr_raw.get("lang", "ch")),
             det_limit_side_len=int(ocr_raw.get("det_limit_side_len", 1600)),
             preprocess_mode=str(ocr_raw.get("preprocess_mode", "balanced")),
@@ -109,6 +115,9 @@ class AppConfig:
                 "det_model_dir": rel(self.ocr.det_model_dir),
                 "rec_model_dir": rel(self.ocr.rec_model_dir),
                 "use_angle_cls": self.ocr.use_angle_cls,
+                "use_doc_orientation_classify": self.ocr.use_doc_orientation_classify,
+                "use_doc_unwarping": self.ocr.use_doc_unwarping,
+                "use_textline_orientation": self.ocr.use_textline_orientation,
                 "lang": self.ocr.lang,
                 "det_limit_side_len": self.ocr.det_limit_side_len,
                 "preprocess_mode": self.ocr.preprocess_mode,

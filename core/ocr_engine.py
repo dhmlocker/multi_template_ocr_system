@@ -23,6 +23,8 @@ class PaddleOCREngine:
     def __init__(self, config: OCRConfig):
         self.config = config
         self._engine: Any | None = None
+        self.last_metadata: dict[str, Any] = {}
+        self.last_raw: Any | None = None
 
     def _is_local_model_dir(self, path: str) -> bool:
         """路径非空且目录存在，视为使用本地模型。"""
@@ -57,9 +59,9 @@ class PaddleOCREngine:
 
         # 构建参数：空路径时省略 *_model_dir 键，让 PaddleOCR 用默认值（自动下载）
         base = {
-            'use_doc_orientation_classify': False,
-            'use_doc_unwarping': False,
-            'use_textline_orientation': bool(self.config.use_angle_cls),
+            'use_doc_orientation_classify': bool(self.config.use_doc_orientation_classify),
+            'use_doc_unwarping': bool(self.config.use_doc_unwarping),
+            'use_textline_orientation': bool(self.config.use_textline_orientation or self.config.use_angle_cls),
             'lang': self.config.lang,
             'enable_mkldnn': False,
             'det_limit_side_len': int(self.config.det_limit_side_len),
@@ -108,7 +110,55 @@ class PaddleOCREngine:
                 raw = engine.ocr(image, cls=bool(self.config.use_angle_cls))
         except Exception as exc:
             raise RuntimeError(f'PaddleOCR inference failed: {exc}') from exc
+        self.last_raw = raw
+        self.last_metadata = self.extract_metadata(raw)
         return self.normalize_result(raw)
+
+    @staticmethod
+    def extract_metadata(raw: Any) -> dict[str, Any]:
+        """Extract orientation/unwarping and model settings for UI and paper logs."""
+        def _jsonable(value: Any) -> Any:
+            if hasattr(value, 'tolist'):
+                return value.tolist()
+            if isinstance(value, dict):
+                return {str(k): _jsonable(v) for k, v in value.items()}
+            if isinstance(value, (list, tuple)):
+                return [_jsonable(v) for v in value]
+            if isinstance(value, (str, int, float, bool, type(None))):
+                return value
+            return str(value)
+
+        objects = raw if isinstance(raw, (list, tuple)) else [raw]
+        metadata: dict[str, Any] = {}
+        for obj in objects:
+            payload = obj if isinstance(obj, dict) else getattr(obj, 'json', None)
+            if callable(payload):
+                payload = payload()
+            if isinstance(payload, str):
+                try:
+                    import json as _json
+                    payload = _json.loads(payload)
+                except Exception:
+                    payload = None
+            if not isinstance(payload, dict):
+                continue
+            res = payload.get('res', payload)
+            if not isinstance(res, dict):
+                continue
+            for key in ('model_settings', 'textline_orientation_angles', 'input_path'):
+                if key not in res:
+                    continue
+                value = res[key]
+                if key == 'textline_orientation_angles':
+                    values = _jsonable(value)
+                    metadata[key] = {
+                        'count': len(values) if isinstance(values, list) else 0,
+                        'values': values[:200] if isinstance(values, list) else values,
+                    }
+                else:
+                    metadata[key] = _jsonable(value)
+            break
+        return metadata
 
     @staticmethod
     def _to_box(poly: Any) -> list[list[float]]:

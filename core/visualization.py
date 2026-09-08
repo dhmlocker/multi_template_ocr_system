@@ -104,3 +104,18 @@ def draw_roi_boxes(image: np.ndarray, fields: list[FieldResult]) -> np.ndarray:
 
 def draw_all(image: np.ndarray, items: list[OCRItem], fields: list[FieldResult]) -> np.ndarray:
     return draw_roi_boxes(draw_ocr_boxes(image, items), fields)
+
+
+def make_side_by_side(image: np.ndarray, annotated: np.ndarray, panel_width: int = 900) -> np.ndarray:
+    """Create the reference-style original/annotated comparison image."""
+    def fit(panel: np.ndarray) -> np.ndarray:
+        scale = panel_width / max(panel.shape[1], 1)
+        return cv2.resize(panel, (panel_width, max(1, int(panel.shape[0] * scale))))
+
+    left, right = fit(image), fit(annotated)
+    height = max(left.shape[0], right.shape[0])
+    canvas = np.full((height, panel_width * 2 + 24, 3), 255, dtype=np.uint8)
+    canvas[:left.shape[0], :panel_width] = left
+    canvas[:right.shape[0], panel_width + 24:] = right
+    cv2.line(canvas, (panel_width + 12, 0), (panel_width + 12, height), (220, 220, 220), 2)
+    return canvas

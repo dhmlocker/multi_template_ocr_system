@@ -154,6 +154,7 @@ class RecognitionPipeline:
             preprocessing=preprocessing,
             image_shape=(int(bgr.shape[0]), int(bgr.shape[1])),
         )
+        result.preprocessing['paddleocrv6'] = dict(getattr(self.ocr_engine, 'last_metadata', {}) or {})
         if save:
             try:
                 result.record_id = int(self._repo().save_result(result))

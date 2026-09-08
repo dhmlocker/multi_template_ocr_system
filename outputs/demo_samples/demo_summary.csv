@@ -1,4 +1,2 @@
 ﻿filename,template_name,ocr_items,avg_ocr_confidence,low_confidence_items,fields_total,fields_recognized,field_coverage,quality_score,total_ms,ocr_ms,warnings,sample_index,ground_truth_template,predicted_template,classification_correct,wall_time_ms,source_path,result_dir
-sample_hospital.jpg,医院收费票据,61,0.9705,3,6,5,0.8333,68.98,69557.43,64591.91,1,1,医院收费票据,医院收费票据,True,69557.52,data/samples/医院收费票据/sample_hospital.jpg,outputs/demo_samples/医院收费票据
-sample_invoice.jpg,增值稅发票,74,0.9752,3,5,4,0.8,43.33,146629.72,144513.79,2,2,增值稅发票,增值稅发票,True,146630.24,data/samples/增值稅发票/sample_invoice.jpg,outputs/demo_samples/增值稅发票
-sample_package.jpeg,快递寄件面单,24,0.9563,2,3,1,0.3333,86.01,46700.53,46547.97,0,3,快递寄件面单,快递寄件面单,True,46700.77,data/samples/快递寄件面单/sample_package.jpeg,outputs/demo_samples/快递寄件面单
+sample_package.jpeg,快递寄件面单,22,0.961,1,3,1,0.3333,86.01,57265.8,52532.19,0,1,快递寄件面单,快递寄件面单,True,57265.86,data/samples/快递寄件面单/sample_package.jpeg,outputs/demo_samples/快递寄件面单

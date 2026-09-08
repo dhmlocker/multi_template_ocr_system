@@ -87,6 +87,16 @@ def _render_result(result, image) -> None:
         with st.expander('图像质量分析', expanded=False):
             for warning in result.quality['warnings']:
                 st.warning(warning)
+    paddle_meta = result.preprocessing.get('paddleocrv6', {}) if isinstance(result.preprocessing, dict) else {}
+    if paddle_meta:
+        with st.expander('PaddleOCRv6 文档预处理状态', expanded=False):
+            settings = paddle_meta.get('model_settings', {})
+            if settings:
+                st.json(settings, expanded=False)
+            angles = paddle_meta.get('textline_orientation_angles')
+            if angles is not None:
+                count = angles.get('count', 0) if isinstance(angles, dict) else len(angles)
+                st.caption(f'文本方向分类输出 {count} 个文本行角度结果。')
     st.download_button(
         '下载识别 JSON', data=__import__('json').dumps(result.to_dict(), ensure_ascii=False, indent=2),
         file_name=f'{result.filename}.json', mime='application/json', use_container_width=True,

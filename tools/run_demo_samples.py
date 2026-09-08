@@ -3,6 +3,7 @@ from __future__ import annotations
 import json
 import sys
 import time
+import argparse
 from pathlib import Path
 
 import cv2
@@ -15,7 +16,7 @@ if str(ROOT) not in sys.path:
 from core.analysis import summarize_result, write_csv, write_jsonl  # noqa: E402
 from core.config import AppConfig  # noqa: E402
 from core.pipeline import RecognitionPipeline  # noqa: E402
-from core.visualization import draw_all, draw_ocr_boxes  # noqa: E402
+from core.visualization import draw_all, draw_ocr_boxes, make_side_by_side  # noqa: E402
 
 
 def read_image(path: Path) -> np.ndarray:
@@ -36,12 +37,17 @@ def save_image(path: Path, image: np.ndarray) -> None:
 
 
 def main() -> int:
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--only', default='', help='只运行一个模板目录名称')
+    args = parser.parse_args()
     cfg = AppConfig.load(ROOT / 'config' / 'settings.yaml', project_root=ROOT)
     pipeline = RecognitionPipeline(cfg)
     sample_root = ROOT / 'data' / 'samples'
     output_root = ROOT / 'outputs' / 'demo_samples'
     output_root.mkdir(parents=True, exist_ok=True)
     paths = sorted(p for p in sample_root.rglob('*') if p.suffix.lower() in {'.jpg', '.jpeg', '.png', '.webp', '.bmp', '.tif', '.tiff'})
+    if args.only:
+        paths = [p for p in paths if p.parent.name == args.only]
     rows = []
     details = []
     for index, path in enumerate(paths, 1):
@@ -54,6 +60,7 @@ def main() -> int:
         save_image(sample_dir / '01_original.jpg', image)
         save_image(sample_dir / '02_ocr_boxes.jpg', draw_ocr_boxes(image, result.ocr_items))
         save_image(sample_dir / '03_ocr_roi.jpg', draw_all(image, result.ocr_items, result.fields))
+        save_image(sample_dir / '04_original_vs_ocr.jpg', make_side_by_side(image, draw_ocr_boxes(image, result.ocr_items)))
         summary = summarize_result(result)
         summary.update({
             'sample_index': index,

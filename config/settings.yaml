@@ -4,7 +4,10 @@
 ocr:
   det_model_dir: ''
   rec_model_dir: ''
-  use_angle_cls: false
+  use_angle_cls: true
+  use_doc_orientation_classify: true
+  use_doc_unwarping: true
+  use_textline_orientation: true
   lang: ch
   det_limit_side_len: 1600
   # 保守增强，改善手机拍摄的低对比度表单；可设为 off / balanced / strong
